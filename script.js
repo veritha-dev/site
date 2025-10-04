@@ -1,49 +1,44 @@
-// ============================================
-// MOBILE MENU
-// ============================================
+// Menu Mobile Toggle
 const hamburger = document.getElementById('hamburger');
 const navMenu = document.getElementById('nav-menu');
 const navLinks = document.querySelectorAll('.nav-link');
 
-if (hamburger && navMenu) {
-    hamburger.addEventListener('click', () => {
-        hamburger.classList.toggle('active');
-        navMenu.classList.toggle('active');
-    });
+hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    navMenu.classList.toggle('active');
+});
 
-    navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            hamburger.classList.remove('active');
-            navMenu.classList.remove('active');
-        });
+navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        navMenu.classList.remove('active');
     });
-}
+});
 
-// ============================================
-// HEADER SCROLL EFFECT
-// ============================================
+// Header Scroll Effect
 const header = document.getElementById('header');
+let lastScroll = 0;
 
 window.addEventListener('scroll', () => {
     const currentScroll = window.pageYOffset;
 
-    if (currentScroll > 50) {
+    if (currentScroll > 100) {
         header.classList.add('scrolled');
     } else {
         header.classList.remove('scrolled');
     }
+
+    lastScroll = currentScroll;
 });
 
-// ============================================
-// SMOOTH SCROLL
-// ============================================
+// Smooth Scroll for Navigation Links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
 
         if (target) {
-            const headerOffset = 72;
+            const headerOffset = 80;
             const elementPosition = target.getBoundingClientRect().top;
             const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -55,82 +50,111 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// ============================================
-// ACTIVE NAV LINK ON SCROLL
-// ============================================
-const sections = document.querySelectorAll('section[id]');
+// Testimonials Slider
+const depoimentos = document.querySelectorAll('.depoimento-card');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+const dotsContainer = document.getElementById('slider-dots');
 
-function highlightNavLink() {
-    const scrollY = window.pageYOffset;
+let currentSlide = 0;
 
-    sections.forEach(section => {
-        const sectionHeight = section.offsetHeight;
-        const sectionTop = section.offsetTop - 100;
-        const sectionId = section.getAttribute('id');
-        const navLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+// Create dots
+depoimentos.forEach((_, index) => {
+    const dot = document.createElement('span');
+    dot.classList.add('dot');
+    if (index === 0) dot.classList.add('active');
+    dot.addEventListener('click', () => goToSlide(index));
+    dotsContainer.appendChild(dot);
+});
 
-        if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
-            navLinks.forEach(link => link.classList.remove('active'));
-            if (navLink) navLink.classList.add('active');
-        }
+const dots = document.querySelectorAll('.dot');
+
+function updateSlider() {
+    depoimentos.forEach((slide, index) => {
+        slide.classList.remove('active');
+        dots[index].classList.remove('active');
     });
+
+    depoimentos[currentSlide].classList.add('active');
+    dots[currentSlide].classList.add('active');
 }
 
-window.addEventListener('scroll', highlightNavLink);
+function nextSlide() {
+    currentSlide = (currentSlide + 1) % depoimentos.length;
+    updateSlider();
+}
 
-// Add active nav link styles
-const activeNavStyle = document.createElement('style');
-activeNavStyle.textContent = `
-    .nav-link.active {
-        color: var(--text-primary);
-        background-color: var(--bg-tertiary);
-    }
-`;
-document.head.appendChild(activeNavStyle);
+function prevSlide() {
+    currentSlide = (currentSlide - 1 + depoimentos.length) % depoimentos.length;
+    updateSlider();
+}
 
-// ============================================
-// CONTACT FORM
-// ============================================
+function goToSlide(index) {
+    currentSlide = index;
+    updateSlider();
+}
+
+nextBtn.addEventListener('click', nextSlide);
+prevBtn.addEventListener('click', prevSlide);
+
+// Auto-advance slider
+let sliderInterval = setInterval(nextSlide, 5000);
+
+// Pause auto-advance on hover
+const sliderContainer = document.querySelector('.depoimentos-slider');
+sliderContainer.addEventListener('mouseenter', () => {
+    clearInterval(sliderInterval);
+});
+
+sliderContainer.addEventListener('mouseleave', () => {
+    sliderInterval = setInterval(nextSlide, 5000);
+});
+
+// Form Handling
 const contactForm = document.getElementById('contato-form');
 
-if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+contactForm.addEventListener('submit', (e) => {
+    e.preventDefault();
 
-        const formData = {
-            nome: document.getElementById('nome').value,
-            empresa: document.getElementById('empresa').value,
-            email: document.getElementById('email').value,
-            telefone: document.getElementById('telefone').value,
-            mensagem: document.getElementById('mensagem').value
-        };
+    // Get form data
+    const formData = {
+        nome: document.getElementById('nome').value,
+        empresa: document.getElementById('empresa').value,
+        email: document.getElementById('email').value,
+        telefone: document.getElementById('telefone').value,
+        mensagem: document.getElementById('mensagem').value
+    };
 
-        console.log('Form Data:', formData);
+    // Here you would typically send the data to a server
+    // For now, we'll just log it and show a success message
+    console.log('Form Data:', formData);
 
-        showSuccessMessage();
-        contactForm.reset();
-    });
-}
+    // Show success message
+    showSuccessMessage();
+
+    // Reset form
+    contactForm.reset();
+});
 
 function showSuccessMessage() {
+    // Create success message element
     const successDiv = document.createElement('div');
     successDiv.style.cssText = `
         position: fixed;
         top: 100px;
         right: 20px;
-        background: var(--primary);
-        color: var(--text-primary);
-        padding: 16px 24px;
+        background: linear-gradient(135deg, #FFC107 0%, #FFA000 100%);
+        color: #0A0A0A;
+        padding: 1.5rem 2rem;
         border-radius: 12px;
-        box-shadow: var(--shadow-lg);
+        box-shadow: 0 10px 30px rgba(255, 193, 7, 0.3);
         z-index: 10000;
         font-weight: 600;
-        font-size: 15px;
-        animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        max-width: 400px;
+        animation: slideInRight 0.5s ease;
     `;
     successDiv.textContent = 'Mensagem enviada com sucesso! Entraremos em contato em breve.';
 
+    // Add animation
     const style = document.createElement('style');
     style.textContent = `
         @keyframes slideInRight {
@@ -158,37 +182,16 @@ function showSuccessMessage() {
 
     document.body.appendChild(successDiv);
 
+    // Remove message after 5 seconds
     setTimeout(() => {
-        successDiv.style.animation = 'slideOutRight 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+        successDiv.style.animation = 'slideOutRight 0.5s ease';
         setTimeout(() => {
             document.body.removeChild(successDiv);
-        }, 400);
-    }, 4000);
+        }, 500);
+    }, 5000);
 }
 
-// ============================================
-// PHONE MASK
-// ============================================
-const telefoneInput = document.getElementById('telefone');
-
-if (telefoneInput) {
-    telefoneInput.addEventListener('input', (e) => {
-        let value = e.target.value.replace(/\D/g, '');
-
-        if (value.length <= 11) {
-            if (value.length <= 10) {
-                value = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
-            } else {
-                value = value.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
-            }
-            e.target.value = value;
-        }
-    });
-}
-
-// ============================================
-// INTERSECTION OBSERVER (FADE IN ANIMATIONS)
-// ============================================
+// Intersection Observer for Fade-in Animations
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -203,84 +206,64 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-// Observe elements for fade-in animation
-const animateElements = document.querySelectorAll('.caso-card, .depoimento-card, .feature-item');
+// Observe cards for animation
+const animateElements = document.querySelectorAll('.sistema-card, .caso-card, .sistema-details');
 animateElements.forEach(el => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(30px)';
-    el.style.transition = 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
     observer.observe(el);
 });
 
-// ============================================
-// STATS COUNTER ANIMATION
-// ============================================
-function animateCounter(element, target, suffix = '') {
-    const duration = 2000;
-    const start = 0;
-    const increment = target / (duration / 16);
-    let current = start;
+// Active Nav Link on Scroll
+const sections = document.querySelectorAll('section[id]');
 
-    const timer = setInterval(() => {
-        current += increment;
-        if (current >= target) {
-            element.textContent = target + suffix;
-            clearInterval(timer);
-        } else {
-            element.textContent = Math.floor(current) + suffix;
+function highlightNavLink() {
+    const scrollY = window.pageYOffset;
+
+    sections.forEach(section => {
+        const sectionHeight = section.offsetHeight;
+        const sectionTop = section.offsetTop - 100;
+        const sectionId = section.getAttribute('id');
+        const navLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+
+        if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+            navLinks.forEach(link => link.classList.remove('active'));
+            if (navLink) navLink.classList.add('active');
         }
-    }, 16);
+    });
 }
 
-// Animate stats when they come into view
-const statsObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
-            entry.target.classList.add('animated');
-            const text = entry.target.textContent;
+window.addEventListener('scroll', highlightNavLink);
 
-            if (text.includes('+')) {
-                const num = parseInt(text.replace(/\D/g, ''));
-                const suffix = text.includes('M') ? 'M+' : '+';
-                animateCounter(entry.target, num, suffix);
-            } else if (text.includes('%')) {
-                const num = parseFloat(text.replace(/[^\d.]/g, ''));
-                animateCounter(entry.target, num, '%');
-            }
-        }
-    });
-}, { threshold: 0.5 });
-
-document.querySelectorAll('.stat-number').forEach(stat => {
-    statsObserver.observe(stat);
-});
-
-// ============================================
-// GRADIENT ORB MOVEMENT (Mouse tracking)
-// ============================================
-document.addEventListener('mousemove', (e) => {
-    const orbs = document.querySelectorAll('.gradient-orb');
-    const mouseX = e.clientX / window.innerWidth;
-    const mouseY = e.clientY / window.innerHeight;
-
-    orbs.forEach((orb, index) => {
-        const speed = (index + 1) * 20;
-        const x = mouseX * speed;
-        const y = mouseY * speed;
-
-        orb.style.transform = `translate(${x}px, ${y}px)`;
-    });
-});
-
-// ============================================
-// PARALLAX EFFECT ON SCROLL
-// ============================================
-window.addEventListener('scroll', () => {
-    const scrolled = window.pageYOffset;
-    const heroContent = document.querySelector('.hero-content');
-
-    if (heroContent && scrolled < window.innerHeight) {
-        heroContent.style.transform = `translateY(${scrolled * 0.3}px)`;
-        heroContent.style.opacity = 1 - (scrolled / 700);
+// Add active class styling
+const activeStyle = document.createElement('style');
+activeStyle.textContent = `
+    .nav-link.active {
+        color: var(--primary-color);
     }
+    .nav-link.active::after {
+        width: 100%;
+    }
+`;
+document.head.appendChild(activeStyle);
+
+// Phone number mask
+const telefoneInput = document.getElementById('telefone');
+telefoneInput.addEventListener('input', (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+
+    if (value.length <= 11) {
+        if (value.length <= 10) {
+            value = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+        } else {
+            value = value.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
+        }
+        e.target.value = value;
+    }
+});
+
+// Scroll to top on page load
+window.addEventListener('load', () => {
+    window.scrollTo(0, 0);
 });
